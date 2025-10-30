@@ -1,0 +1,12 @@
+version: '3.8'
+
+services:
+  xray:
+    image: ghcr.io/xtls/xray-core:latest
+    container_name: xray-client
+    volumes:
+      - ./usa_config.json:/etc/xray/config.json
+    ports:
+      - "1080:1080"
+    restart: always
+    command: -c /etc/xray/config.json

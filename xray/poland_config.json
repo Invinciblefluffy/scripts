@@ -1,0 +1,73 @@
+ {
+        "log": {
+            "access": "",
+            "error": "",
+            "loglevel": "warning"
+        },
+        "inbounds": [
+            {
+                "tag": "socks",
+                "port": 1080,
+                "listen": "0.0.0.0",
+                "protocol": "socks",
+                "sniffing": {
+                    "enabled": true,
+                    "destOverride": [
+                        "http",
+                        "tls"
+                    ],
+                    "routeOnly": false
+                },
+                "settings": {
+                    "auth": "noauth",
+                    "udp": true,
+                    "allowTransparent": false
+                }
+            }
+        ],
+        "outbounds": [
+            {
+                "tag": "proxy",
+                "protocol": "vless",
+                "settings": {
+                    "vnext": [
+                        {
+                            "address": "poland server ip",
+                            "port": 443,
+                            "users": [
+                                {
+                                    "id": "81ec08a2-2680-49b1-8cf2-24f6546d125f",
+                                    "security": "auto",
+                                    "encryption": "none",
+                                    "email": "t@t.com",
+                                    "alterId": 0,
+                                    "flow": "xtls-rprx-vision"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                "streamSettings": {
+                    "network": "tcp",
+                    "security": "reality",
+                    "realitySettings": {
+                        "serverName": "disk.yandex.ru",
+                        "fingerprint": "chrome",
+                        "publicKey": "XGMgJJc9bTTP4ftLGyEicn7lNFrxNGjv7JhHfGejnw8",
+                        "shortId": "2e5faf93362e9788"
+                    }
+                }
+            }
+        ],
+        "dns": {
+            "servers": [
+                "1.1.1.1",
+                "8.8.8.8"
+            ]
+        },
+        "routing": {
+            "domainStrategy": "AsIs",
+            "rules": []
+        },
+        "remarks": "\ud83c\uddf5\ud83c\uddf1PolandReality\u2705"
+    }
