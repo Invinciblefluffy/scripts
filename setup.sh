@@ -71,14 +71,61 @@ configure_ssh() {
     print_success "SSH configured on port $SSH_PORT."
 }
 
-setup_firewall() {
-    print_info "Setting up UFW firewall and Fail2Ban..."
+setup_iptables() {
+    print_info "Installing iptables-persistent and setting up firewall rules..."
     
-    if ! command -v ufw &> /dev/null; then
-        sudo apt-get install -y ufw
-    else
-        print_info "UFW is already installed."
+    # Install iptables-persistent to save rules
+    # Pre-seed the installation to avoid interactive prompts
+    echo iptables-persistent iptables-persistent/autosave_v4 boolean true | sudo debconf-set-selections
+    echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections
+    sudo apt-get install -y iptables-persistent
+
+    print_info "Flushing existing iptables rules..."
+    sudo iptables -F
+    sudo iptables -X
+    sudo iptables -Z
+
+    print_info "Setting default policies..."
+    # Temporarily accept all INPUT to avoid being locked out during setup
+    sudo iptables -P INPUT ACCEPT
+    sudo iptables -P FORWARD ACCEPT
+    sudo iptables -P OUTPUT ACCEPT
+
+    print_info "Applying new iptables rules..."
+    # Allow localhost
+    sudo iptables -A INPUT -i lo -j ACCEPT
+    sudo iptables -A OUTPUT -o lo -j ACCEPT
+
+    # Allow established/related connections
+    sudo iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+    # Allow SSH (port from .env)
+    if [ -z "$SSH_PORT" ]; then
+        print_warn "SSH_PORT is not set. Using default 22 for iptables rule."
+        SSH_PORT=22
     fi
+    sudo iptables -A INPUT -p tcp --dport "$SSH_PORT" -j ACCEPT
+
+    # Allow HTTP/HTTPS
+    sudo iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+    sudo iptables -A INPUT -p tcp --dport 443 -j ACCEPT
+
+    # Allow ping (ICMP)
+    sudo iptables -A INPUT -p icmp --icmp-type echo-request -j ACCEPT
+
+    # Finally, drop all other incoming traffic
+    print_info "Setting default INPUT policy to DROP."
+    sudo iptables -P INPUT DROP
+
+    # Save the rules
+    print_info "Saving iptables rules..."
+    sudo iptables-save > /etc/iptables/rules.v4
+
+    print_success "iptables firewall configured and rules are persistent."
+}
+
+install_fail2ban() {
+    print_info "Setting up Fail2Ban..."
 
     if ! command -v fail2ban-client &> /dev/null; then
         sudo apt-get install -y fail2ban
@@ -86,20 +133,7 @@ setup_firewall() {
         print_info "Fail2Ban is already installed."
     fi
 
-    # UFW setup
-    if sudo ufw status | grep -q "22/tcp" && [ "$SSH_PORT" != "22" ]; then
-        print_info "Removing default SSH rule for port 22."
-        sudo ufw delete allow 22
-    fi
-    sudo ufw default deny incoming
-    sudo ufw default allow outgoing
-    sudo ufw allow "$SSH_PORT"
-    sudo ufw allow 443 # for HTTPS
-    sudo ufw --force enable
-
-    # Fail2Ban setup
-    # Create a config file for sshd overrides in jail.d
-    # This is cleaner and more robust than modifying jail.local
+    # Fail2Ban setup for SSH
     JAIL_OVERRIDE_FILE="/etc/fail2ban/jail.d/sshd-custom.conf"
     print_info "Configuring Fail2Ban for SSH..."
     sudo mkdir -p /etc/fail2ban/jail.d
@@ -112,27 +146,7 @@ bantime = ${F2B_BAN_TIME:-3600}
 EOF
 
     sudo systemctl restart fail2ban
-    print_success "UFW and Fail2Ban have been configured."
-}
-
-configure_ufw_rules() {
-    print_info "Configuring UFW rules..."
-
-    # Replace ICMP rules in /etc/ufw/before.rules
-    sudo sed -i -e 's/-A ufw-before-input -p icmp --icmp-type destination-unreachable -j ACCEPT/-A ufw-before-input -p icmp --icmp-type destination-unreachable -j DROP/g' /etc/ufw/before.rules
-    sudo sed -i -e 's/-A ufw-before-input -p icmp --icmp-type time-exceeded -j ACCEPT/-A ufw-before-input -p icmp --icmp-type time-exceeded -j DROP/g' /etc/ufw/before.rules
-    sudo sed -i -e 's/-A ufw-before-input -p icmp --icmp-type parameter-problem -j ACCEPT/-A ufw-before-input -p icmp --icmp-type parameter-problem -j DROP/g' /etc/ufw/before.rules
-    sudo sed -i -e 's/-A ufw-before-input -p icmp --icmp-type echo-request -j ACCEPT/-A ufw-before-input -p icmp --icmp-type echo-request -j DROP/g' /etc/ufw/before.rules
-    if ! grep -q -- '-A ufw-before-input -p icmp --icmp-type source-quench -j DROP' /etc/ufw/before.rules; then
-      sudo sed -i -e '/-A ufw-before-input -p icmp --icmp-type echo-request -j DROP/a -A ufw-before-input -p icmp --icmp-type source-quench -j DROP' /etc/ufw/before.rules
-    fi
-
-    sudo sed -i -e 's/-A ufw-before-forward -p icmp --icmp-type destination-unreachable -j ACCEPT/-A ufw-before-forward -p icmp --icmp-type destination-unreachable -j DROP/g' /etc/ufw/before.rules
-    sudo sed -i -e 's/-A ufw-before-forward -p icmp --icmp-type time-exceeded -j ACCEPT/-A ufw-before-forward -p icmp --icmp-type time-exceeded -j DROP/g' /etc/ufw/before.rules
-    sudo sed -i -e 's/-A ufw-before-forward -p icmp --icmp-type parameter-problem -j ACCEPT/-A ufw-before-forward -p icmp --icmp-type parameter-problem -j DROP/g' /etc/ufw/before.rules
-    sudo sed -i -e 's/-A ufw-before-forward -p icmp --icmp-type echo-request -j ACCEPT/-A ufw-before-forward -p icmp --icmp-type echo-request -j DROP/g' /etc/ufw/before.rules
-
-    print_success "UFW rules configured."
+    print_success "Fail2Ban has been configured."
 }
 
 install_docker() {
@@ -171,28 +185,6 @@ install_docker() {
     fi
 }
 
-install_netbird() {
-    if [ "$NETBIRD_SETUP_KEY" = "YOUR_NETBIRD_SETUP_KEY" ] || [ -z "$NETBIRD_SETUP_KEY" ]; then
-        print_info "Skipping Netbird installation (NETBIRD_SETUP_KEY is not set)."
-        return
-    fi
-
-    if command -v netbird &> /dev/null; then
-        print_info "Netbird is already installed. Skipping installation."
-    else
-        print_info "Installing and configuring Netbird..."
-        curl -fsSL https://pkgs.netbird.io/install.sh | sudo sh
-        print_success "Netbird installed."
-    fi
-    
-    sudo netbird up --setup-key "$NETBIRD_SETUP_KEY"
-
-    if [ -n "$NETBIRD_PEER_IP" ] && [ -n "$NETBIRD_PEER_PORT" ]; then
-        sudo ufw allow from "$NETBIRD_PEER_IP" to any port "$NETBIRD_PEER_PORT" proto tcp
-        print_info "UFW rule added for Netbird peer $NETBIRD_PEER_IP on port $NETBIRD_PEER_PORT."
-    fi
-}
-
 install_acme_sh() {
     if [ "$INSTALL_ACME_SH" != "true" ]; then
         print_info "Skipping SSL certificate installation."
@@ -224,16 +216,9 @@ install_acme_sh() {
 
     print_info "Issuing SSL certificate for $ACME_DOMAIN..."
     
-    # Temporarily open port 80 in UFW
-    sudo ufw allow 80/tcp
-    
-    # Issue cert using standalone mode. This needs to run as root.
-    sudo "$ACME_SH_PATH" --issue --standalone -d "$ACME_DOMAIN" --keylength ec-256
-    
-    # Close port 80
-    sudo ufw delete allow 80/tcp
-
-    print_success "SSL certificate process completed for $ACME_DOMAIN."
+        # Issue cert using standalone mode. This needs to run as root.
+        sudo "$ACME_SH_PATH" --issue --standalone -d "$ACME_DOMAIN" --keylength ec-256
+            print_success "SSL certificate process completed for $ACME_DOMAIN."
     print_info "Your certificate is located in /root/.acme.sh/$ACME_DOMAIN/"
     print_info "You may need to copy the certs to a location accessible by your services."
 }
@@ -277,11 +262,10 @@ main() {
     load_env
     update_system
     configure_ssh
-    setup_firewall
-    configure_ufw_rules
+    setup_iptables
+    install_fail2ban
     enable_bbr
     install_docker
-    install_netbird
     install_acme_sh
 
     print_info "-------------------- SETUP COMPLETE --------------------"
