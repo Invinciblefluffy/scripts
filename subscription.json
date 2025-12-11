@@ -3,7 +3,6 @@
   "outbounds": [
     {
       "type": "vless",
-      "tag": "proxy",
       "server": "hyscon.redbear.space",
       "server_port": 8443,
       "uuid": "d8a83d6b-cd34-4e49-a6a3-35d5cbcd3325",
