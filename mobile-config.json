@@ -1,0 +1,31 @@
+{
+    "outbounds": [
+        {
+            "type": "vless",
+            "tag": "vless-out",
+            "server": "hyscon.redbear.space",
+            "server_port": 8443,
+            "uuid": "d8a83d6b-cd34-4e49-a6a3-35d5cbcd3325",
+            "flow": "xtls-rprx-vision",
+            "packet_encoding": "xudp",
+            "tls": {
+                "enabled": true,
+                "server_name": "github.com",
+                "insecure": false,
+                "utls": {
+                    "enabled": true,
+                    "fingerprint": "chrome"
+                },
+                "reality": {
+                    "enabled": true,
+                    "public_key": "ouorf2VIFqNpbGVXKzz0UwXzuuFaJ8FtaVpafm6-4kE",
+                    "short_id": "ca05e9cd2a6e5db3"
+                }
+            }
+        }
+    ],
+    "route": {
+        "rules": [],
+        "final": "vless-out"
+    }
+}
