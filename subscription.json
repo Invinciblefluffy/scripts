@@ -1,8 +1,5 @@
 {
-  "log": {
-    "disabled": false,
-    "level": "info"
-  },
+  "inbounds": [],
   "outbounds": [
     {
       "type": "vless",
@@ -19,8 +16,7 @@
           "public_key": "ouorf2VIFqNpbGVXKzz0UwXzuuFaJ8FtaVpafm6-4kE",
           "short_id": "ca05e9cd2a6e5db3"
         }
-      },
-      "packet_encoding": "xudp"
+      }
     }
   ]
 }
