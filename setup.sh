@@ -158,6 +158,16 @@ setup_iptables() {
     echo iptables-persistent iptables-persistent/autosave_v6 boolean true | sudo debconf-set-selections
     sudo apt-get install -y iptables-persistent
 
+    # Detect primary network interface
+    PRIMARY_INTERFACE=$(ip -4 route show default | sed -ne 's/.* dev \([^ ]*\) .*/\1/p')
+    if [ -z "$PRIMARY_INTERFACE" ]; then
+        print_warn "Could not detect primary network interface. Docker rules may need manual adjustment."
+        # Fallback to eth0
+        PRIMARY_INTERFACE="eth0"
+    else
+        print_info "Detected primary network interface: $PRIMARY_INTERFACE"
+    fi
+
     print_info "Flushing existing iptables rules..."
     sudo iptables -F && sudo iptables -X && sudo iptables -Z
 
@@ -211,12 +221,7 @@ setup_iptables() {
         done
     fi
 
-    if [ "$INSTALL_DOCKER" = "true" ]; then
-        print_info "Adding iptables rules for Docker..."
-        # This chain is for containers to connect to the outside world
-        sudo iptables -A FORWARD -i docker0 -o eth0 -j ACCEPT
-        sudo iptables -A FORWARD -i eth0 -o docker0 -m state --state RELATED,ESTABLISHED -j ACCEPT
-    fi
+
 
     # Finally, drop all other incoming traffic
     print_info "Setting default INPUT policy to DROP."
