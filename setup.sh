@@ -349,8 +349,8 @@ main() {
     configure_ssh
     install_fail2ban
     enable_bbr
-    install_docker # Docker should be installed before iptables to create its chains
-    setup_iptables # iptables runs after to include docker rules
+    setup_iptables # iptables runs before docker installation
+    install_docker # Docker is installed after iptables is set up
     install_acme_sh
 
     print_info "-------------------- SETUP COMPLETE --------------------"
