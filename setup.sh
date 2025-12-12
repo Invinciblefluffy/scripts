@@ -118,7 +118,10 @@ collect_user_input() {
 update_system() {
     print_info "Updating and upgrading system packages..."
     # Set frontend to noninteractive and force keeping old config files to prevent interactive prompts
-    sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::=\"--force-confold\" upgrade
+    sudo apt-get update && sudo DEBIAN_FRONTEND=noninteractive apt-get -yq \
+        -o Dpkg::Options::="--force-confdef" \
+        -o Dpkg::Options::="--force-confold" \
+        dist-upgrade
     sudo apt-get install -y kitty-terminfo apt-transport-https ca-certificates curl gnupg lsb-release
     print_success "System updated."
 }
