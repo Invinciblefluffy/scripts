@@ -1,4 +1,15 @@
 #!/bin/bash
+# --- Pre-flight Check for Interactivity ---
+if ! [ -t 0 ]; then
+    echo -e "\n\e[1;31m[ERROR] This script must be run in an interactive terminal.\e[0m"
+    echo -e "It cannot be piped directly from curl. Please run it using one of the following methods:"
+    echo -e "  1. Download and execute:"
+    echo -e "     \e[1;32mcurl -sSL https://raw.githubusercontent.com/Invinciblefluffy/scripts/main/setup.sh -o setup.sh && chmod +x setup.sh && ./setup.sh\e[0m"
+    echo -e "  2. Clone the repository and execute:"
+    echo -e "     \e[1;32mgit clone https://github.com/Invinciblefluffy/scripts.git && cd scripts && ./setup.sh\e[0m"
+    exit 1
+fi
+
 # Interactive VPS Setup Script
 # ============================
 #
