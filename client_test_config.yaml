@@ -32,7 +32,7 @@ proxies:
       public-key: "O3tXMiN3-cayMV2XCUB-YSVoe2brSbgIHYaQ07EM-gk"
       short-id: "ABCDEF"   # <-- Must match the short-id on your server
 
-  # Proxy 2: Hysteria2
+  # Proxy 2 Hysteria2
   - name: "Hysteria2-TEST"
     type: hysteria2
     server: "213.176.19.243" # <-- CORRECTED: Filled in your IP
@@ -42,7 +42,7 @@ proxies:
     skip-cert-verify: true
     alpn: ["h3"]
 
-  # Proxy 3: TUICv5
+  # Proxy 3 TUICv5
   - name: "TUICv5-TEST"
     type: tuic
     server: "213.176.19.243"
