@@ -23,7 +23,6 @@ sniffer:
   geo-update-interval: 24 
   
   dns:
-  enable: true
   # CORRECTED: Using a non-standard port to avoid conflict
   listen: 0.0.0.0:1053
   enhanced-mode: fake-ip
@@ -61,10 +60,8 @@ proxies:
     client-fingerprint: "firefox"
     servername: "www.github.com"
     reality-opts:
-      # CRITICAL: This public key MUST match your server's private key.
-      # The key you had was incorrect. Please replace this placeholder.
       public-key: "4FwDW91W_kUvYFyCh7HKgmF0tybtAC3uejGP5R6T4AU"
-      short-id: "ABCDEF"   # <-- Must match the short-id on your server
+      short-id: "fad23e"
 
 #  - name: "hy-in"
 #    type: hysteria2
@@ -171,21 +168,18 @@ rule-providers:
 
     # Routing rules
 rules:
-  - RULE-SET,ru-bundle,PROXY
-  - RULE-SET,refilter_domains,PROXY
-  - RULE-SET,refilter_ipsum,PROXY
+  - RULE-SET,ru-bundle,AirSip
+  - RULE-SET,refilter_domains,AirSip
+  - RULE-SET,refilter_ipsum,AirSip
   - RULE-SET,ru-app-list,DIRECT 
   - RULE-SET,torrent-clients,DIRECT
   - RULE-SET,torrent-trackers,DIRECT
-  - RULE-SET,torrent-websites,PROXY
-  - RULE-SET,discord-voice-ips,PROXY
+  - RULE-SET,torrent-websites,AirSip
+  - RULE-SET,discord-voice-ips,AirSip
   - DOMAIN-SUFFIX,ru,DIRECT
   - DOMAIN-SUFFIX,рф,DIRECT
   - DOMAIN-SUFFIX,su,DIRECT
   - DOMAIN-SUFFIX,ru.com,DIRECT
   
-  # Russian geosite list (includes many Russian sites)
-  - GEOSITE,ru,DIRECT
-  - MATCH,DIRECT
 # Routing rules
   - MATCH,AirSip
