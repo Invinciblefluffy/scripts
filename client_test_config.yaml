@@ -46,18 +46,6 @@ proxies:
     alpn:
       - h3
  
-  - name: "TUICv5-TEST"
-    type: tuic
-    server: "213.176.19.243"
-    port: 3448
-    # CORRECTED: UUID and password are now in the correct separate fields.
-    uuid: "1e869266-1863-4683-9c8b-bb405392d26d"
-    password: "_OdZzVJJCamohh8Hq9"
-    sni: "airsip.redbear.space"
-    skip-cert-verify: true
-    udp-relay-mode: native
-    alpn: ["h3"]
-
   - name: "tuic5-in"
     server: "airsip.redbear.space"
     port: 3448
@@ -67,16 +55,9 @@ proxies:
   # ip: 127.0.0.1
   # heartbeat-interval: 10000
     alpn: [h3]
-    disable-sni: true
-    reduce-rtt: true
-    request-timeout: 8000
-    udp-relay-mode: native
-    congestion-controller: bbr
-  # max-udp-relay-packet-size: 1500
-  # fast-open: true
-  # skip-cert-verify: true
-  # max-open-streams: 20
-  # sni: example.com
+    # disable-sni: true # Removed to enable SNI
+    sni: "airsip.redbear.space"
+    skip-cert-verify: true # Re-confirming for testing
   
   - name: "mieru-in-1"
     type: mieru
