@@ -73,8 +73,8 @@ proxies:
     port: 8647
     key: "8faee9ff-973f-47ec-aaa9-0ac72d12b099"
     aead-method: chacha20-poly1305
-    padding-min: 2
-    padding-max: 7
+    padding-min: 1
+    padding-max: 15
     table-type: prefer_ascii
     http-mask: true
 
