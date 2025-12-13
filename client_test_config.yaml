@@ -66,11 +66,23 @@ proxies:
     username: username1
     password: password1
     multiplexing: MULTIPLEXING_LOW
-# Proxy group
+
+  - name: "sudoku-in-1"
+    type: sudoku
+    server: "213.176.19.243"
+    port: 8647
+    key: "8faee9ff-973f-47ec-aaa9-0ac72d12b099"
+    aead-method: chacha20-poly1305
+    padding-min: 2
+    padding-max: 7
+    table-type: prefer_ascii
+    http-mask: true
+
+    # Proxy group
 proxy-groups:
   - name: "Proxy-Test"
     type: select
-    proxies: ["VLESS-REALITY-TEST","mieru-in-1", "hy-in", "TUICv5-TEST", "DIRECT"]
+    proxies: ["VLESS-REALITY-TEST","sudoku-in-1","mieru-in-1", "hy-in", "TUICv5-TEST", "DIRECT"]
 
 # Routing rules
 rules:
