@@ -92,7 +92,7 @@ proxies:
 proxy-groups:
   - name: "Proxy-Test"
     type: select
-    proxies: ["VLESS-REALITY-TEST",mieru-in-1", "hy-in", "tuic5-in","DIRECT"]
+    proxies: ["VLESS-REALITY-TEST", "mieru-in-1", "hy-in", "tuic5-in","DIRECT"]
 
 # Routing rules
 rules:
