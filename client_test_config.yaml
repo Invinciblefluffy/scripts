@@ -1,0 +1,70 @@
+# Basic client settings
+mixed-port: 7890
+log-level: debug
+allow-lan: true
+mode: rule
+
+# DNS configuration for the client
+dns:
+  enable: true
+  listen: 0.0.0.0:53
+  default-nameserver: ["8.8.8.8", "1.1.1.1"]
+  nameserver: ["https://dns.google/dns-query", "https://cloudflare-dns.com/dns-query"]
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+
+# Proxy definitions
+proxies:
+  - name: "VLESS-REALITY-TEST"
+    type: vless
+    server: "213.176.19.243"
+    port: 443
+    uuid: "bb681cb2-d6e9-4f25-9e48-f3714b547dae"
+    network: tcp
+    tls: true
+    udp: true
+    client-fingerprint: "chrome"
+    servername: "www.microsoft.com"
+    reality-opts:
+      # CRITICAL: This public key MUST match your server's private key.
+      # The key you had was incorrect. Please replace this placeholder.
+      public-key: "O3tXMiN3-cayMV2XCUB-YSVoe2brSbgIHYaQ07EM-gk"
+      short-id: "ABCDEF"   # <-- Must match the short-id on your server
+
+  - name: "hy-in"
+    type: hysteria2
+    server: "213.176.19.243"
+    port: 8443
+    password: password1
+    up: "30 Mbps"
+    down: "200 Mbps"
+    obfs: salamander # по умолчанию пусто, если указать - включается obfs, в настоящее время поддерживается только salamander
+    obfs-password: fluffybear
+    sni: "airsip.redbear.space"
+    skip-cert-verify: false
+    fingerprint: 8F:38:F5:DB:C6:1A:66:F1:C4:25:57:55:DD:55:31:22:FE:33:33:6C:26:5F:2F:A3:C5:EC:CA:6E:B5:BC:91:A1
+    alpn:
+      - h3
+ 
+  - name: "TUICv5-TEST"
+    type: tuic
+    server: "213.176.19.243"
+    port: 3448
+    # CORRECTED: UUID and password are now in the correct separate fields.
+    uuid: "1e869266-1863-4683-9c8b-bb405392d26d"
+    password: "_OdZzVJJCamohh8Hq9"
+    sni: "airsip.redbear.space"
+    skip-cert-verify: true
+    udp-relay-mode: native
+    alpn: ["h3"]
+
+# Proxy group
+proxy-groups:
+  - name: "Proxy-Test"
+    type: select
+    proxies: ["VLESS-REALITY-TEST", "Hysteria2-TEST", "TUICv5-TEST", "DIRECT"]
+
+# Routing rules
+rules:
+  - GEOIP,CN,DIRECT
+  - MATCH,Proxy-Test
