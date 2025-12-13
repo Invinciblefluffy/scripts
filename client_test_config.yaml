@@ -17,7 +17,7 @@ dns:
 proxies:
   - name: "VLESS-REALITY-TEST"
     type: vless
-    server: "213.176.19.243"
+    server: "airsip.redbear.space"
     port: 443
     uuid: "bb681cb2-d6e9-4f25-9e48-f3714b547dae"
     network: tcp
@@ -33,7 +33,7 @@ proxies:
 
   - name: "hy-in"
     type: hysteria2
-    server: "213.176.19.243"
+    server: "airsip.redbear.space"
     port: 8443
     password: password1
     up: "30 Mbps"
@@ -58,31 +58,41 @@ proxies:
     udp-relay-mode: native
     alpn: ["h3"]
 
+  - name: "tuic5-in"
+    server: "airsip.redbear.space"
+    port: 3448
+    type: tuic
+    uuid: 8faee9ff-973f-47ec-aaa9-0ac72d12b099
+    password: PASSWORD1
+  # ip: 127.0.0.1
+  # heartbeat-interval: 10000
+    alpn: [h3]
+    disable-sni: true
+    reduce-rtt: true
+    request-timeout: 8000
+    udp-relay-mode: native
+    congestion-controller: bbr
+  # max-udp-relay-packet-size: 1500
+  # fast-open: true
+  # skip-cert-verify: true
+  # max-open-streams: 20
+  # sni: example.com
+  
   - name: "mieru-in-1"
     type: mieru
-    server: "213.176.19.243"
+    server: "airsip.redbear.space"
     port: 7468
     transport: TCP
     username: username1
     password: password1
     multiplexing: MULTIPLEXING_LOW
 
-  - name: "sudoku-in-1"
-    type: sudoku
-    server: "213.176.19.243"
-    port: 8647
-    key: "8faee9ff-973f-47ec-aaa9-0ac72d12b099"
-    aead-method: chacha20-poly1305
-    padding-min: 1
-    padding-max: 15
-    table-type: prefer_ascii
-    http-mask: true
 
     # Proxy group
 proxy-groups:
   - name: "Proxy-Test"
     type: select
-    proxies: ["VLESS-REALITY-TEST","sudoku-in-1","mieru-in-1", "hy-in", "TUICv5-TEST", "DIRECT"]
+    proxies: ["VLESS-REALITY-TEST",mieru-in-1", "hy-in", "tuic5-in","DIRECT"]
 
 # Routing rules
 rules:
