@@ -1,0 +1,191 @@
+# Basic client settings
+mixed-port: 7890
+log-level: debug
+mode: rule
+
+sniffer:
+  enable: true
+  force-dns-mapping: true
+  parse-pure-ip: true
+  sniff:
+    HTTP:
+      ports: [80, 8080-8880]
+      override-destination: true
+    TLS:
+      ports: [443, 8443]
+  
+  geox-url:
+  geoip: "https://raw.githubusercontent.com/runetfreedom/russia-v2ray-rules-dat/release/geoip.dat"
+  geosite: "https://raw.githubusercontent.com/runetfreedom/russia-v2ray-rules-dat/release/geosite.dat"
+  mmdb: "https://fastly.jsdelivr.net/gh/MetaCubeX/meta-rules-dat@release/geoip.metadb"
+
+  geo-auto-update: false 
+  geo-update-interval: 24 
+  
+  dns:
+  enable: true
+  # CORRECTED: Using a non-standard port to avoid conflict
+  listen: 0.0.0.0:1053
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  fallback:
+    - https://dns.google/dns-query
+    - https://cloudflare-dns.com/dns-query
+  fallback-filter:
+    geoip: true
+    geoip-code: RU
+  nameserver:
+    - tls://dns.yandex.ru
+    - tls://dns.mail.ru
+  nameserver-policy:
+   'geosite:ru,yandex,mailru,vk,rutube,sberbank,tinkoff,cian,avito,wildberries,ozon,by,kz,ua,am,az,ge,kg,md,tj,tm,uz':
+    - tls://dns.yandex.ru
+   'domain:telegram.org,telegram.me,t.me,x.com,twitter.com,facebook.com,instagram.com,whatsapp.com,signal.org,meduza.inovayagazeta.ru,doxajournal.ru,currenttime.tv,bbc.com,dw.com,svoboda.org,theins.ru,linkedin.com,twitch.tv,bellingca.com,github.com,gitlab.com':
+    - https://dns.google/dns-query#Proxy
+   'domain_suffix:.sberbank.ru,.vtb.ru,.gazprombank.ru,.alfabank.ru,.tinkoff.ru,.raiffeisen.ru,.rosseltorg.ru,.gosuslu.ru':
+    - https://dns.quad9.net/dns-query#Proxy
+
+global-client-fingerprint: firefox
+
+
+# Proxy definitions
+proxies:
+  - name: "VLESS-REALITY-TEST"
+    type: vless
+    server: "airsip.redbear.space"
+    port: 443
+    uuid: "b31bda47-d7cc-4a5b-b257-6c127aa8858a"
+    network: tcp
+    tls: true
+    udp: true
+    client-fingerprint: "firefox"
+    servername: "www.github.com"
+    reality-opts:
+      # CRITICAL: This public key MUST match your server's private key.
+      # The key you had was incorrect. Please replace this placeholder.
+      public-key: "4FwDW91W_kUvYFyCh7HKgmF0tybtAC3uejGP5R6T4AU"
+      short-id: "ABCDEF"   # <-- Must match the short-id on your server
+
+#  - name: "hy-in"
+#    type: hysteria2
+#    server: "airsip.redbear.space"
+#    port: 8443
+#    password: password1
+#    up: "30 Mbps"
+#    down: "200 Mbps"
+#    obfs: salamander # по умолчанию пусто, если указать - включается obfs, в настоящее время поддерживается только salamander
+#    obfs-password: fluffybear
+#    sni: "airsip.redbear.space"
+#    skip-cert-verify: false
+#    fingerprint: 8F:38:F5:DB:C6:1A:66:F1:C4:25:57:55:DD:55:31:22:FE:33:33:6C:26:5F:2F:A3:C5:EC:CA:6E:B5:BC:91:A1
+#    alpn:
+#      - h3
+ 
+#  - name: "tuic5-in"
+#    server: "airsip.redbear.space"
+#    port: 3448
+#    type: tuic
+#    uuid: 8faee9ff-973f-47ec-aaa9-0ac72d12b099
+#    password: PASSWORD1
+  # ip: 127.0.0.1
+  # heartbeat-interval: 10000
+#    alpn: [h3]
+#    # disable-sni: true # Removed to enable SNI
+#    sni: "airsip.redbear.space"
+#    skip-cert-verify: true # Re-confirming for testing
+  
+#  - name: "mieru-in-1"
+#    type: mieru
+#    server: "airsip.redbear.space"
+#    port: 7468
+#    transport: TCP
+#    username: username1
+#    password: password1
+#    multiplexing: MULTIPLEXING_LOW
+
+
+    # Proxy group
+proxy-groups:
+  - name: "AirSip"
+    type: select
+    proxies: ["VLESS-REALITY-TEST","DIRECT"]
+
+
+rule-providers:
+  ru-bundle:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://github.com/legiz-ru/mihomo-rule-sets/raw/main/ru-bundle/rule.mrs
+    path: ./ru-bundle/rule.mrs
+    interval: 86400
+  refilter_domains:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://github.com/legiz-ru/mihomo-rule-sets/raw/main/re-filter/domain-rule.mrs
+    path: ./re-filter/domain-rule.mrs
+    interval: 86400
+  refilter_ipsum:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: https://github.com/legiz-ru/mihomo-rule-sets/raw/main/re-filter/ip-rule.mrs
+    path: ./re-filter/ip-rule.mrs
+    interval: 86400  
+  ru-app-list:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://github.com/legiz-ru/mihomo-rule-sets/raw/main/other/ru-app-list.yaml
+    path: ./rule-sets/ru-app-list.yaml
+    interval: 86400
+  torrent-trackers:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://github.com/legiz-ru/mihomo-rule-sets/raw/main/other/torrent-trackers.mrs
+    path: ./rule-sets/torrent-trackers.mrs
+    interval: 86400
+  torrent-websites:
+    type: http
+    behavior: domain
+    format: mrs
+    url: https://github.com/legiz-ru/mihomo-rule-sets/raw/main/other/torrent-websites.mrs
+    path: ./rule-sets/torrent-websites.mrs
+    interval: 86400
+  torrent-clients:
+    type: http
+    behavior: classical
+    format: yaml
+    url: https://github.com/legiz-ru/mihomo-rule-sets/raw/main/other/torrent-clients.yaml
+    path: ./rule-sets/torrent-clients.yaml
+    interval: 86400
+  discord-voice-ips:
+    type: http
+    behavior: ipcidr
+    format: mrs
+    url: https://github.com/legiz-ru/mihomo-rule-sets/raw/main/other/discord-voice-ip-list.mrs
+    path: ./other/discord-voice-ips.mrs
+    interval: 86400
+
+    # Routing rules
+rules:
+  - RULE-SET,ru-bundle,PROXY
+  - RULE-SET,refilter_domains,PROXY
+  - RULE-SET,refilter_ipsum,PROXY
+  - RULE-SET,ru-app-list,DIRECT 
+  - RULE-SET,torrent-clients,DIRECT
+  - RULE-SET,torrent-trackers,DIRECT
+  - RULE-SET,torrent-websites,PROXY
+  - RULE-SET,discord-voice-ips,PROXY
+  - DOMAIN-SUFFIX,ru,DIRECT
+  - DOMAIN-SUFFIX,рф,DIRECT
+  - DOMAIN-SUFFIX,su,DIRECT
+  - DOMAIN-SUFFIX,ru.com,DIRECT
+  
+  # Russian geosite list (includes many Russian sites)
+  - GEOSITE,ru,DIRECT
+  - MATCH,DIRECT
+# Routing rules
+  - MATCH,AirSip
